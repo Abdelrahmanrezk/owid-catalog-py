@@ -115,7 +115,7 @@ class Table(pd.DataFrame):
             metadata["fields"] = {
                 col: self._fields[col].to_dict() for col in self.all_columns
             }
-            json.dump(metadata, ostream, indent=2)
+            json.dump(metadata, ostream, indent=2, default=str)
 
     @classmethod
     def read_csv(cls, path: str) -> "Table":
@@ -265,3 +265,11 @@ class Table(pd.DataFrame):
         "Return names of all columns in the dataset, including the index."
         combined: List[str] = filter(None, list(self.index.names) + list(self.columns))  # type: ignore
         return combined
+
+    def prune_metadata(self) -> "Table":
+        """Prune metadata for columns that are not in the table. This can happen after slicing
+        the table by columns."""
+        self._fields = {
+            col: self._fields[col] for col in self.all_columns
+        }
+        return self
